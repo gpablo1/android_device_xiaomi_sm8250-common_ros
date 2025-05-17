@@ -28,18 +28,18 @@ endif
 
 # Architecture
 TARGET_ARCH := arm64
-TARGET_ARCH_VARIANT := armv8-a
+TARGET_ARCH_VARIANT := armv8-2a-dotprod
 TARGET_CPU_ABI := arm64-v8a
 TARGET_CPU_ABI2 :=
-TARGET_CPU_VARIANT := generic
-TARGET_CPU_VARIANT_RUNTIME := kryo385
+TARGET_CPU_VARIANT := cortex-a76
+TARGET_CPU_VARIANT_RUNTIME := cortex-a76
 
 TARGET_2ND_ARCH := arm
-TARGET_2ND_ARCH_VARIANT := armv8-a
+TARGET_2ND_ARCH_VARIANT := armv8-2a
 TARGET_2ND_CPU_ABI := armeabi-v7a
 TARGET_2ND_CPU_ABI2 := armeabi
-TARGET_2ND_CPU_VARIANT := generic
-TARGET_2ND_CPU_VARIANT_RUNTIME := kryo385
+TARGET_2ND_CPU_VARIANT := cortex-a55
+TARGET_2ND_CPU_VARIANT_RUNTIME := cortex-a55
 
 # Audio
 AUDIO_FEATURE_ENABLED_AHAL_EXT := false
@@ -79,6 +79,7 @@ endif
 
 # Init
 TARGET_INIT_VENDOR_LIB ?= //$(COMMON_PATH):init_xiaomi_kona
+TARGET_RECOVERY_DEVICE_MODULES ?= init_xiaomi_kona
 
 # Kernel
 ifeq ($(PRODUCT_VIRTUAL_AB_OTA),true)
@@ -91,15 +92,25 @@ BOARD_KERNEL_PAGESIZE := 4096
 BOARD_KERNEL_CMDLINE := androidboot.hardware=qcom androidboot.console=ttyMSM0 androidboot.memcg=1 lpm_levels.sleep_disabled=1 msm_rtb.filter=0x237 service_locator.enable=1 androidboot.usbcontroller=a600000.dwc3 swiotlb=2048 loop.max_part=7 cgroup.memory=nokmem,nosocket reboot=panic_warm
 BOARD_KERNEL_CMDLINE += androidboot.fstab_suffix=qcom
 BOARD_KERNEL_CMDLINE += androidboot.init_fatal_reboot_target=recovery
+BOARD_KERNEL_CMDLINE += kpti=off
 BOARD_KERNEL_IMAGE_NAME := Image
 BOARD_INCLUDE_DTB_IN_BOOTIMG := true
 BOARD_KERNEL_SEPARATED_DTBO := true
 BOARD_MKBOOTIMG_ARGS += --header_version $(BOARD_BOOT_HEADER_VERSION)
+TARGET_KERNEL_CLANG_COMPILE := true
 TARGET_KERNEL_SOURCE := kernel/xiaomi/sm8250
+TARGET_KERNEL_ARCH := arm64
+TARGET_KERNEL_CLANG_VERSION := r547379
+TARGET_KERNEL_CLANG_PATH := $(shell pwd)/prebuilts/clang/host/linux-x86/clang-r547379
+KERNEL_LD := LD=ld.lld
+TARGET_KERNEL_ADDITIONAL_FLAGS := LD=ld.lld AR=llvm-ar NM=llvm-nm OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump STRIP=llvm-strip
+TARGET_KERNEL_ADDITIONAL_FLAGS += LLVM=1 LLVM_IAS=1
+TARGET_KERNEL_ADDITIONAL_FLAGS += HOSTCFLAGS="-fuse-ld=lld -Wno-unused-command-line-argument"
 TARGET_KERNEL_CONFIG := \
     vendor/kona-perf_defconfig \
     vendor/debugfs.config \
     vendor/xiaomi/sm8250-common.config
+BOARD_RAMDISK_USE_LZ4 := true
 
 # Lineage Health
 TARGET_HEALTH_CHARGING_CONTROL_SUPPORTS_BYPASS := false
@@ -203,6 +214,11 @@ SOONG_CONFIG_XIAOMI_KONA := \
 SOONG_CONFIG_XIAOMI_KONA_PARTITION_SCHEME ?= a
 SOONG_CONFIG_XIAOMI_KONA_WIFI_SYMLINK_VERSION ?= v1
 
+# Touch
+SOONG_CONFIG_NAMESPACES += XIAOMI_TOUCH
+SOONG_CONFIG_XIAOMI_TOUCH := HIGH_TOUCH_POLLING_PATH
+SOONG_CONFIG_XIAOMI_TOUCH_HIGH_TOUCH_POLLING_PATH := /sys/devices/virtual/touch/touch_dev/bump_sample_rate
+
 # Verified Boot
 BOARD_AVB_ENABLE := true
 BOARD_AVB_MAKE_VBMETA_IMAGE_ARGS += --flags 3
@@ -221,14 +237,14 @@ endif
 
 # VINTF
 DEVICE_FRAMEWORK_COMPATIBILITY_MATRIX_FILE := \
-    hardware/qcom-caf/common/vendor_framework_compatibility_matrix.xml \
+    $(COMMON_PATH)/framework_compatibility_matrix.xml \
     hardware/xiaomi/vintf/xiaomi_framework_compatibility_matrix.xml \
     vendor/lineage/config/device_framework_matrix.xml
 DEVICE_MANIFEST_FILE += $(COMMON_PATH)/manifest.xml
 ifneq ($(TARGET_IS_TABLET),true)
 DEVICE_MANIFEST_FILE += $(COMMON_PATH)/manifest_phone.xml
 endif
-DEVICE_MATRIX_FILE += hardware/qcom-caf/common/compatibility_matrix.xml
+DEVICE_MATRIX_FILE += $(COMMON_PATH)/compatibility_matrix.xml
 ODM_MANIFEST_SKUS += nfc
 ODM_MANIFEST_NFC_FILES := $(COMMON_PATH)/manifest_nfc.xml
 
@@ -247,6 +263,10 @@ WIFI_HIDL_FEATURE_AWARE := true
 WIFI_HIDL_FEATURE_DUAL_INTERFACE := true
 WIFI_HIDL_UNIFIED_SUPPLICANT_SERVICE_RC_ENTRY := true
 WPA_SUPPLICANT_VERSION := VER_0_8_X
+CONFIG_IEEE80211AX := true
+
+CONFIG_ACS := true
+CONFIG_IEEE80211AC := true
 
 # Inherit the proprietary files
 include vendor/xiaomi/sm8250-common/BoardConfigVendor.mk
