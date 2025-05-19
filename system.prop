@@ -36,14 +36,3 @@ vendor.wfdservice64=enable
 
 # Zygote
 persist.device_config.runtime_native.usap_pool_enabled=true
-
-# Disable Skia tracing by default
- debug.hwui.skia_atrace_enabled=false
-
- # Log
- persist.log.tag.ACDB-LOADER=S
- persist.log.tag.CamX=S
- persist.log.tag.CHIUSECASE=S
- persist.log.tag.CVP=S
- persist.log.tag.ResourcesCompat=S
- persist.log.tag.SYNX-UMD=S
