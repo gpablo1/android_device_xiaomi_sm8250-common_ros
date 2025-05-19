@@ -241,6 +241,28 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     vendor.lineage.health-service.default
 
+# Logging
+SPAMMY_LOG_TAGS := \
+    SensorService \
+    MiClstc \
+    MiStcImpl \
+    SDM \
+    SDM-histogram \
+    SRE \
+    WifiHAL \
+    cnss-daemon \
+    libcitsensorservice@2.0-impl \
+    libsensor-displayalgo \
+    libsensor-ssccalapi \
+    android.hardware.power-service-qti \
+    libsensor-boledalgo \
+    libsensor-parseRGB \
+    libsensor-qshcalapi \
+    sensors \
+    vendor.qti.hardware.display.composer-service \
+    vendor.xiaomi.sensor.citsensorservice-service.aidl \
+    vendor.xiaomi.sensor.citsensorservice@2.0-service
+    
 # Media configs
 PRODUCT_PACKAGES += \
     media_codecs_c2.xml \
